@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="VentasPro - Sistema de gestión de ventas, inventario y clientes">
+  <meta name="theme-color" content="#0f0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>VentasPro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+</head>
+<body>
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <!-- App header -->
+  <header id="app-header">
+    <div class="header-left">
+      <h1 class="logo">Ventas<span>Pro</span></h1>
+    </div>
+    <div class="header-right">
+      <button id="btn-backup" class="icon-btn" title="Backup / Restaurar" aria-label="Backup">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main content area -->
+  <main id="app-content">
+
+    <!-- ===== DASHBOARD PAGE ===== -->
+    <section id="page-dashboard" class="page active">
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <select id="dash-period" class="select-sm">
+          <option value="today">Hoy</option>
+          <option value="week">Esta semana</option>
+          <option value="month" selected>Este mes</option>
+          <option value="all">Todo</option>
+        </select>
+      </div>
+
+      <div class="kpi-grid" id="kpi-grid">
+        <!-- KPIs rendered by JS -->
+      </div>
+
+      <div class="card" id="chart-sales-card">
+        <h3 class="card-title">Ventas recientes</h3>
+        <canvas id="chart-sales" height="200"></canvas>
+      </div>
+
+      <div class="dashboard-widgets">
+        <div class="card" id="widget-top-products">
+          <h3 class="card-title">🏆 Top Productos</h3>
+          <div id="top-products-list" class="widget-list"></div>
+        </div>
+        <div class="card" id="widget-top-clients">
+          <h3 class="card-title">⭐ Top Clientes</h3>
+          <div id="top-clients-list" class="widget-list"></div>
+        </div>
+      </div>
+
+      <div class="card" id="widget-low-stock">
+        <h3 class="card-title">⚠️ Stock Bajo</h3>
+        <div id="low-stock-list" class="widget-list"></div>
+      </div>
+
+      <div class="card" id="widget-pending-payments">
+        <h3 class="card-title">💳 Pagos Pendientes</h3>
+        <div id="pending-payments-list" class="widget-list"></div>
+      </div>
+
+      <div class="card" id="widget-recent-sales">
+        <h3 class="card-title">🕐 Ventas Recientes</h3>
+        <div id="recent-sales-list" class="widget-list"></div>
+      </div>
+    </section>
+
+    <!-- ===== PRODUCTS PAGE ===== -->
+    <section id="page-products" class="page">
+      <div class="page-header">
+        <h2>Productos</h2>
+        <button id="btn-add-product" class="btn btn-primary btn-sm">+ Nuevo</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-products" placeholder="Buscar producto..." class="input-search">
+      </div>
+      <div id="products-list" class="items-list"></div>
+    </section>
+
+    <!-- ===== CLIENTS PAGE ===== -->
+    <section id="page-clients" class="page">
+      <div class="page-header">
+        <h2>Clientes</h2>
+        <button id="btn-add-client" class="btn btn-primary btn-sm">+ Nuevo</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-clients" placeholder="Buscar cliente..." class="input-search">
+      </div>
+      <div id="clients-list" class="items-list"></div>
+    </section>
+
+    <!-- ===== SALES PAGE ===== -->
+    <section id="page-sales" class="page">
+      <div class="page-header">
+        <h2>Ventas</h2>
+        <div class="header-actions">
+          <select id="filter-sales-type" class="select-sm">
+            <option value="all">Todas</option>
+            <option value="contado">Contado</option>
+            <option value="fiado">Fiado</option>
+            <option value="cuotas">Cuotas</option>
+          </select>
+        </div>
+      </div>
+      <div class="search-bar">
+        <input type="text" id="search-sales" placeholder="Buscar venta..." class="input-search">
+      </div>
+      <div id="sales-list" class="items-list"></div>
+    </section>
+
+    <!-- ===== PAYMENTS PAGE ===== -->
+    <section id="page-payments" class="page">
+      <div class="page-header">
+        <h2>Cuentas por Cobrar</h2>
+        <select id="filter-payments" class="select-sm">
+          <option value="pending">Pendientes</option>
+          <option value="overdue">Vencidas</option>
+          <option value="paid">Pagadas</option>
+          <option value="all">Todas</option>
+        </select>
+      </div>
+      <div id="payments-list" class="items-list"></div>
+    </section>
+  </main>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Product Modal -->
+  <div id="modal-product" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-product-title">Nuevo Producto</h3>
+        <button class="modal-close" data-close="modal-product">&times;</button>
+      </div>
+      <form id="form-product" class="modal-body">
+        <input type="hidden" id="product-id">
+        <div class="form-group">
+          <label for="product-name">Nombre *</label>
+          <input type="text" id="product-name" required placeholder="Ej: Doritos">
+        </div>
+        <div class="form-group">
+          <label for="product-category">Categoría</label>
+          <input type="text" id="product-category" placeholder="Ej: Snacks" list="categories-list">
+          <datalist id="categories-list"></datalist>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-cost">Costo *</label>
+            <input type="number" id="product-cost" required min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="form-group">
+            <label for="product-price">Precio Venta *</label>
+            <input type="number" id="product-price" required min="0" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="product-stock">Stock *</label>
+            <input type="number" id="product-stock" required min="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label for="product-min-stock">Stock Mínimo</label>
+            <input type="number" id="product-min-stock" min="0" value="5" placeholder="5">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-product">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Client Modal -->
+  <div id="modal-client" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 id="modal-client-title">Nuevo Cliente</h3>
+        <button class="modal-close" data-close="modal-client">&times;</button>
+      </div>
+      <form id="form-client" class="modal-body">
+        <input type="hidden" id="client-id">
+        <div class="form-group">
+          <label for="client-name">Nombre *</label>
+          <input type="text" id="client-name" required placeholder="Nombre del cliente">
+        </div>
+        <div class="form-group">
+          <label for="client-phone">Teléfono</label>
+          <input type="tel" id="client-phone" placeholder="Opcional">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-client">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- New Sale Modal -->
+  <div id="modal-sale" class="modal-overlay">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h3>Nueva Venta</h3>
+        <button class="modal-close" data-close="modal-sale">&times;</button>
+      </div>
+      <div id="form-sale" class="modal-body">
+        <!-- Step 1: Client -->
+        <div class="sale-step" id="sale-step-1">
+          <h4 class="step-title">1. Cliente</h4>
+          <div class="form-group">
+            <div class="client-search-wrap">
+              <input type="text" id="sale-client-search" placeholder="Buscar o crear cliente..." autocomplete="off">
+              <div id="sale-client-results" class="dropdown-results"></div>
+            </div>
+            <input type="hidden" id="sale-client-id">
+            <div id="sale-client-selected" class="selected-tag hidden"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: Products -->
+        <div class="sale-step" id="sale-step-2">
+          <h4 class="step-title">2. Productos</h4>
+          <div class="form-group">
+            <div class="client-search-wrap">
+              <input type="text" id="sale-product-search" placeholder="Buscar producto..." autocomplete="off">
+              <div id="sale-product-results" class="dropdown-results"></div>
+            </div>
+          </div>
+          <div id="sale-cart" class="sale-cart"></div>
+          <div class="sale-total">
+            <span>Total:</span>
+            <span id="sale-total-amount">$0.00</span>
+          </div>
+        </div>
+
+        <!-- Step 3: Payment type -->
+        <div class="sale-step" id="sale-step-3">
+          <h4 class="step-title">3. Tipo de Pago</h4>
+          <div class="payment-types">
+            <label class="payment-type-card active">
+              <input type="radio" name="payment-type" value="contado" checked>
+              <div class="payment-icon">💵</div>
+              <div class="payment-label">Contado</div>
+              <div class="payment-desc">Pago inmediato</div>
+            </label>
+            <label class="payment-type-card">
+              <input type="radio" name="payment-type" value="fiado">
+              <div class="payment-icon">📅</div>
+              <div class="payment-label">Fiado</div>
+              <div class="payment-desc">Pago los 15 y 30</div>
+            </label>
+            <label class="payment-type-card">
+              <input type="radio" name="payment-type" value="cuotas">
+              <div class="payment-icon">📋</div>
+              <div class="payment-label">Cuotas</div>
+              <div class="payment-desc">Pago personalizado</div>
+            </label>
+          </div>
+
+          <!-- Cuotas config (shown when cuotas selected) -->
+          <div id="cuotas-config" class="hidden">
+            <div class="form-group">
+              <label for="cuotas-count">Cantidad de cuotas</label>
+              <input type="number" id="cuotas-count" min="2" max="24" value="2" placeholder="2">
+            </div>
+            <div id="cuotas-dates" class="cuotas-dates-list"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" data-close="modal-sale">Cancelar</button>
+          <button type="button" id="btn-confirm-sale" class="btn btn-primary">Confirmar Venta</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sale Detail Modal -->
+  <div id="modal-sale-detail" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Detalle de Venta</h3>
+        <button class="modal-close" data-close="modal-sale-detail">&times;</button>
+      </div>
+      <div id="sale-detail-content" class="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- Backup Modal -->
+  <div id="modal-backup" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Backup / Restaurar</h3>
+        <button class="modal-close" data-close="modal-backup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="backup-actions">
+          <button id="btn-export" class="btn btn-primary btn-block">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar Datos (JSON)
+          </button>
+          <div class="divider-text"><span>o</span></div>
+          <label class="btn btn-outline btn-block" for="import-file">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Importar Datos (JSON)
+          </label>
+          <input type="file" id="import-file" accept=".json" class="hidden">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirm Dialog -->
+  <div id="modal-confirm" class="modal-overlay">
+    <div class="modal modal-sm">
+      <div class="modal-body" style="text-align:center; padding: 2rem;">
+        <div id="confirm-icon" style="font-size:3rem; margin-bottom:1rem;">⚠️</div>
+        <h3 id="confirm-title" style="margin-bottom:0.5rem;"></h3>
+        <p id="confirm-message" style="color:var(--text-secondary);"></p>
+        <div class="modal-footer" style="justify-content:center; gap:1rem; margin-top:1.5rem;">
+          <button id="confirm-cancel" class="btn btn-ghost">Cancelar</button>
+          <button id="confirm-ok" class="btn btn-danger">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav id="bottom-nav">
+    <button class="nav-item active" data-page="dashboard">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Inicio</span>
+    </button>
+    <button class="nav-item" data-page="products">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      <span>Productos</span>
+    </button>
+    <button class="nav-item nav-sale" id="btn-new-sale">
+      <div class="nav-sale-icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <span>Venta</span>
+    </button>
+    <button class="nav-item" data-page="clients">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Clientes</span>
+    </button>
+    <button class="nav-item" data-page="payments">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <span>Cobros</span>
+    </button>
+  </nav>
+
+  <script src="store.js"></script>
+  <script src="modules.js"></script>
+  <script src="sales.js"></script>
+  <script src="dashboard.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
