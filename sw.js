@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ventaspro-v1';
+const CACHE_NAME = 'ventaspro-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -29,9 +29,15 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: cache-first strategy (perfect for offline-first app)
+// Fetch: network-first (get updates fast, fallback to cache when offline)
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
