@@ -93,6 +93,7 @@ a{color:var(--accent);text-decoration:none}
 .card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;backdrop-filter:blur(8px);transition:var(--transition)}
 .card:hover{background:var(--bg-card-hover)}
 .card-title{font-size:0.85rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.75rem}
+.card canvas{width:100%;display:block;height:auto}
 
 /* ===== KPI GRID ===== */
 .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem}

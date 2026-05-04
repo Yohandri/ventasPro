@@ -89,10 +89,12 @@ const Dashboard = {
     const canvas = document.getElementById('chart-sales');
     const ctx = canvas.getContext('2d');
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = canvas.offsetWidth * dpr;
-    canvas.height = 200 * dpr;
+    // IMPORTANT: read layout width BEFORE setting canvas.width
+    const W = canvas.offsetWidth;
+    const H = Math.min(200, W * 0.5); // responsive height
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
     ctx.scale(dpr, dpr);
-    const W = canvas.offsetWidth, H = 200;
     ctx.clearRect(0, 0, W, H);
 
     // Group by day (last 7 days)
