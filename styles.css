@@ -237,6 +237,32 @@ a{color:var(--accent);text-decoration:none}
 .detail-items-table th{text-align:left;font-weight:600;color:var(--text-secondary);padding:6px 4px;border-bottom:1px solid var(--border);font-size:0.72rem;text-transform:uppercase}
 .detail-items-table td{padding:6px 4px;border-bottom:1px solid var(--border)}
 
+/* ===== SEGMENT CONTROL ===== */
+.segment-control {
+  display: flex;
+  background: var(--bg-input);
+  padding: 3px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1rem;
+}
+.segment-btn {
+  flex: 1;
+  padding: 6px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: calc(var(--radius-sm) - 2px);
+  transition: var(--transition);
+}
+.segment-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--accent-glow);
+}
+
 /* ===== RESPONSIVE ===== */
 @media(min-width:768px){
   body{max-width:600px;margin:0 auto}

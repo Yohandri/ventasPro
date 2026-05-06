@@ -1,0 +1,23 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs/Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Agent Data
+.gemini/
+.antigravity/
+.atl/
+openspec/
+
+# Project Specific
+ventaspro-backup-*.json
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

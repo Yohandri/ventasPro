@@ -165,6 +165,8 @@ const Dashboard = {
 
 /* ===== PAYMENTS MODULE ===== */
 const Payments = {
+  viewMode: 'client', // 'client' or 'sale'
+
   render() {
     const filter = document.getElementById('filter-payments').value;
     const list = document.getElementById('payments-list');
@@ -176,9 +178,13 @@ const Payments = {
     sales.forEach(s => {
       const cl = clients.find(c => c.id === s.clientId);
       s.installments.forEach(inst => {
-        items.push({ saleId: s.id, clientName: cl ? cl.name : '—', paymentType: s.paymentType, ...inst, isOverdue: !inst.paid && new Date(inst.dueDate) < now });
+        items.push({ saleId: s.id, clientId: s.clientId, clientName: cl ? cl.name : '—', paymentType: s.paymentType, ...inst, isOverdue: !inst.paid && new Date(inst.dueDate) < now });
       });
     });
+
+    if (this.viewMode === 'client') {
+      return this.renderGrouped(items);
+    }
 
     if (filter === 'pending') items = items.filter(i => !i.paid);
     else if (filter === 'overdue') items = items.filter(i => i.isOverdue);
@@ -213,12 +219,123 @@ const Payments = {
     }).join('');
   },
 
-  payInstallment(saleId, num) {
+  renderGrouped(items) {
+    const list = document.getElementById('payments-list');
+    const filter = document.getElementById('filter-payments').value;
+    const groups = {};
+
+    items.forEach(i => {
+      if (!groups[i.clientId]) {
+        groups[i.clientId] = {
+          clientId: i.clientId,
+          name: i.clientName,
+          total: 0,
+          pending: 0,
+          overdue: 0,
+          count: 0
+        };
+      }
+      groups[i.clientId].total += i.amount;
+      if (!i.paid) {
+        groups[i.clientId].pending += i.amount;
+        if (i.isOverdue) groups[i.clientId].overdue += i.amount;
+        groups[i.clientId].count++;
+      }
+    });
+
+    let groupedItems = Object.values(groups);
+    
+    // Filter based on payment status if needed
+    if (filter === 'pending' || filter === 'overdue') {
+      groupedItems = groupedItems.filter(g => g.pending > 0);
+      if (filter === 'overdue') groupedItems = groupedItems.filter(g => g.overdue > 0);
+    } else if (filter === 'paid') {
+      groupedItems = groupedItems.filter(g => g.pending === 0);
+    }
+
+    groupedItems.sort((a, b) => b.overdue - a.overdue || b.pending - a.pending);
+
+    if (!groupedItems.length) {
+      list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">👥</div><div class="empty-state-text">No hay deudas ${filter === 'pending' ? 'pendientes' : filter === 'overdue' ? 'vencidas' : ''}</div></div>`;
+      return;
+    }
+
+    list.innerHTML = groupedItems.map(g => {
+      const hasOverdue = g.overdue > 0;
+      const bg = hasOverdue ? 'var(--gradient-3)' : 'var(--gradient-4)';
+      return `<div class="list-item" onclick="Payments.switchToSales('${g.name}')">
+        <div class="item-icon" style="background:${bg}">${hasOverdue ? '!' : '⏳'}</div>
+        <div class="item-info">
+          <div class="item-name">${g.name}</div>
+          <div class="item-detail">${g.count} cuota${g.count !== 1 ? 's' : ''} pendiente${g.count !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="item-right">
+          <div class="item-price">${fmt.money(g.pending)}</div>
+          ${g.pending > 0 ? `<button class="pay-btn" onclick="event.stopPropagation(); Payments.payAll('${g.clientId}')">Pagar</button>` : ''}
+          ${hasOverdue ? `<div style="color:var(--danger);font-size:0.7rem;font-weight:600">Vencido: ${fmt.money(g.overdue)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  },
+
+  async payAll(clientId) {
+    const cl = Store.clients.find(c => c.id === clientId);
+    const clientName = cl ? cl.name : 'este cliente';
+    
+    // Calculate total pending
+    const sales = Store.sales;
+    let total = 0;
+    sales.forEach(s => {
+      if (s.clientId === clientId && s.installments) {
+        s.installments.forEach(inst => { if (!inst.paid) total += inst.amount; });
+      }
+    });
+
+    if (total === 0) return;
+
+    const ok = await confirmDialog('Pagar todo', `¿Confirmás el pago total de ${fmt.money(total)} para ${clientName}?`, '💰');
+    if (!ok) return;
+
+    // Process payment
+    sales.forEach(s => {
+      if (s.clientId === clientId && s.installments) {
+        s.installments.forEach(inst => {
+          if (!inst.paid) {
+            inst.paid = true;
+            inst.paidDate = new Date().toISOString();
+          }
+        });
+        // Update sale status
+        const allPaid = s.installments.every(i => i.paid);
+        const somePaid = s.installments.some(i => i.paid);
+        s.status = allPaid ? 'paid' : somePaid ? 'partial' : 'pending';
+      }
+    });
+
+    Store.sales = sales;
+    toast(`Deuda de ${clientName} saldada ✓`);
+    this.render();
+  },
+
+  switchToSales(clientName) {
+    this.viewMode = 'sale';
+    document.getElementById('btn-view-sale').classList.add('active');
+    document.getElementById('btn-view-client').classList.remove('active');
+    // We could filter the sales list by client name here if we wanted
+    this.render();
+  },
+
+  async payInstallment(saleId, num) {
     const sales = Store.sales;
     const sale = sales.find(s => s.id === saleId);
     if (!sale || !sale.installments) return;
     const inst = sale.installments.find(i => i.num === num);
     if (!inst || inst.paid) return;
+
+    const cl = Store.clients.find(c => c.id === sale.clientId);
+    const ok = await confirmDialog('Registrar Pago', `¿Confirmás el pago de ${fmt.money(inst.amount)} de ${cl ? cl.name : 'este cliente'}?`, '💵');
+    if (!ok) return;
+
     inst.paid = true;
     inst.paidDate = new Date().toISOString();
     // Update sale status
@@ -230,11 +347,25 @@ const Payments = {
     this.render();
     // Refresh detail if open
     const detailModal = document.getElementById('modal-sale-detail');
-    if (detailModal.classList.contains('open')) Sales.showDetail(saleId);
+    if (detailModal && detailModal.classList.contains('open')) Sales.showDetail(saleId);
   },
 
   init() {
     document.getElementById('filter-payments').addEventListener('change', () => this.render());
+    
+    document.getElementById('btn-view-client').addEventListener('click', () => {
+      this.viewMode = 'client';
+      document.getElementById('btn-view-client').classList.add('active');
+      document.getElementById('btn-view-sale').classList.remove('active');
+      this.render();
+    });
+
+    document.getElementById('btn-view-sale').addEventListener('click', () => {
+      this.viewMode = 'sale';
+      document.getElementById('btn-view-sale').classList.add('active');
+      document.getElementById('btn-view-client').classList.remove('active');
+      this.render();
+    });
   }
 };
 
