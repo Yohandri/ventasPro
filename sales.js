@@ -244,6 +244,7 @@ const Sales = {
 
   init() {
     document.getElementById('btn-new-sale').addEventListener('click', () => this.openSaleModal());
+    document.getElementById('nav-sale-txt').addEventListener('click', () => navigateTo('sales'));
     document.getElementById('btn-confirm-sale').addEventListener('click', () => this.confirmSale());
     document.getElementById('search-sales').addEventListener('input', e => {
       const type = document.getElementById('filter-sales-type').value;

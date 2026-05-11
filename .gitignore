@@ -16,6 +16,7 @@ openspec/
 
 # Project Specific
 ventaspro-backup-*.json
+*.code-workspace
 
 # Logs
 npm-debug.log*
