@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ventaspro-v2';
+const CACHE_NAME = 'ventaspro-v3';
 const ASSETS = [
   './',
   './index.html',
